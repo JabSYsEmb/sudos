@@ -1,11 +1,15 @@
 <script context="module" lang="ts">
   import { writable } from "svelte/store";
   const output = writable<string>();
+  const error = writable<string>();
 </script>
 
 <script lang="ts">
   async function commandFormSubmit(event: SubmitEvent) {
     event.preventDefault();
+    error.set("");
+    output.set("");
+
     const form = event.target as HTMLFormElement;
     const data = new FormData(form);
 
@@ -16,7 +20,7 @@
 
     if (res.status === 500) {
       const stderr = await res.json();
-      alert(stderr.message);
+      error.set(stderr.message);
     }
 
     const stdout = await res.json();
@@ -29,6 +33,32 @@
   <button type="submit">execute</button>
 </form>
 
-{#if $output}
-  <pre>{$output}</pre>
+{#if $error}
+  <div class="error">
+    <pre>{$error}</pre>
+  </div>
 {/if}
+
+{#if $output}
+  <div class="feedback">
+    <pre>{$output}</pre>
+  </div>
+{/if}
+
+<style>
+  .error {
+    background-color: oklch(80.89% 0.2032 17.63 / 0.5);
+    border: 2px solid red;
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .feedback {
+    background-color: oklch(80.89% 0.2032 150.63 / 0.7);
+    border: 2px solid red;
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem;
+  }
+</style>
