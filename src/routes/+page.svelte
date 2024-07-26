@@ -12,13 +12,15 @@
     const res = await fetch("/log", {
       method: "POST",
       body: data,
-    })
-      .then((res) => res.json())
-      .catch((_) => ({ error: "something went wrong" }));
+    });
 
-    if (res.type === "success") {
-      output.set(res.data.output);
+    if (res.status === 500) {
+      const stderr = await res.json();
+      alert(stderr.message);
     }
+
+    const stdout = await res.json();
+    output.set(stdout.output);
   }
 </script>
 

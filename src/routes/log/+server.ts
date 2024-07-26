@@ -1,17 +1,16 @@
-import { error } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import shell from "shelljs";
 
 export async function POST(req) {
   const res = await req.request.formData();
   const data = Object.fromEntries(res) as { command: string };
 
-  if (!data.command) return error(500, { message: "command is missing" });
-
-  const output = shell.exec(data.command);
-
-  return new Response(JSON.stringify({ type: "success", data: { output } }), {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  try {
+    if (!data.command) throw new Error("command is missing");
+    const output = shell.exec(data.command);
+    if (output.code !== 0) throw new Error("something went wrong");
+    return json({ output });
+  } catch (e) {
+    if (e instanceof Error) return error(500, { message: e.message });
+  }
 }
